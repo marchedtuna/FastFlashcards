@@ -35,7 +35,7 @@ class App:
         self.entry_frame.pack()
         tk.Label(self.root, textvariable=self.AddedCards).pack()
         tk.Button(self.root, text="Export TXT File", command=lambda: self.make_txt(settings)).pack(pady=15)
-        tk.Button(self.root, text="Print Settings", command=lambda: self.print_settings(settings)).pack(pady=15)
+        #tk.Button(self.root, text="Print Settings", command=lambda: self.print_settings(settings)).pack(pady=15)
         
     def print_settings(self, settings):
         #For debugging
@@ -56,7 +56,6 @@ class App:
         self.card_text.set("")
         self.cards_added += 1
         self.AddedCards.set(f"Added {self.cards_added} cards to deck.")
-        print(f"kl: {settings.known_lang}, tl: {settings.target_lang}")
         return card_details
     
     def make_txt(self, settings):
