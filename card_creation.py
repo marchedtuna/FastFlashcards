@@ -9,6 +9,9 @@ from settings import Settings
 
 settings = Settings()
 
+def stored_name(word):
+        return word.lower().replace(" ","_")
+
 async def translate_text(text, settings):
      async with Translator() as translator:
         textdict = {}
@@ -45,23 +48,23 @@ def download_image(word, settings):
                 try:
                         img_response = requests.get(img_url)
                         media_path = os.path.join(os.getenv("APPDATA"),"Anki2", "User 1", "collection.media")
-                        img_path = os.path.join(media_path, f"{settings.standard_deck_name}-{word}.jpg")
+                        img_path = os.path.join(media_path, f"{stored_name(settings.deck_name)}-{word}.jpg")
                         with open(img_path, "wb") as f:
                                 f.write(img_response.content)
-                        return f'<img src="{settings.standard_deck_name}-{word}.jpg">'
+                        return f'<img src="{stored_name(settings.deck_name)}-{word}.jpg">'
                 except Exception as e:
                         print(f"Error downloading image: {e}")
         return -1
 
 def download_audio(word, lang, settings):
         speech = gTTS(word, lang=lang)
-        speech.save(f"{settings.standard_deck_name}-{word}-{lang}.mp3")
-        source_path = os.path.join(os.getcwd(), f"{settings.standard_deck_name}-{word}-{lang}.mp3")
+        speech.save(f"{stored_name(settings.deck_name)}-{word}-{lang}.mp3")
+        source_path = os.path.join(os.getcwd(), f"{stored_name(settings.deck_name)}-{word}-{lang}.mp3")
         media_path = os.path.join(os.getenv("APPDATA"),"Anki2", "User 1", "collection.media")
-        destination_path = os.path.join(media_path, f"{settings.standard_deck_name}-{word}-{lang}.mp3")
+        destination_path = os.path.join(media_path, f"{stored_name(settings.deck_name)}-{word}-{lang}.mp3")
         
         shutil.move(source_path, destination_path)
-        return f'[sound:{settings.standard_deck_name}-{word}-{lang}.mp3]'
+        return f'[sound:{stored_name(settings.deck_name)}-{word}-{lang}.mp3]'
 
 async def async_fill_details(text, settings):
         full_query = settings.front_format + ";" + settings.back_format
@@ -79,7 +82,7 @@ async def async_fill_details(text, settings):
         else:
                 card_details["audio_target_lang"] = ""
         if "[IMG]" in full_query:
-                card_details["image"] = download_image(text)
+                card_details["image"] = download_image(text, settings)
         else:
                 card_details["image"] = ""
         settings.card_list.append(card_details)
@@ -95,7 +98,7 @@ def add_line(card_details, settings):
                 "[AKL]":card_details["audio_known_lang"],
                 "[ATL]":card_details["audio_target_lang"],
                 "[IMG]":card_details["image"],
-                "\n":"<br>"
+                "   ":"<br>"
         }
         
         front_format = settings.front_format
@@ -103,4 +106,4 @@ def add_line(card_details, settings):
         for decorator in map:
                 front_format = front_format.replace(decorator, map[decorator])
                 back_format = back_format.replace(decorator, map[decorator])
-        return f'{settings.standard_deck_name}	{front_format}	{back_format}\n'
+        return f'{stored_name(settings.deck_name)}	{front_format}	{back_format}\n'

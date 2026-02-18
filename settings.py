@@ -3,17 +3,22 @@ from tkinter import *
 from tkinter import ttk
 import json
 
+global version
+version = "0.1.1"
+
 class Settings:
     def __init__(self):
         self.initialize()
     
     def initialize(self):
-        self.card_list = []
-        self.known_lang = "en"
-        self.target_lang = "es"
-        self.front_format = "[TKL]"
-        self.back_format = "[TTL]"
-        self.deck_name = "Unnamed Deck"
+        with open("settings.json", "r") as f:
+            settings_json = json.load(f)
+            self.known_lang = settings_json["known_lang"]
+            self.target_lang = settings_json["target_lang"]
+            self.front_format = settings_json["front_format"]
+            self.back_format = settings_json["back_format"]
+            self.deck_name = settings_json["deck_name"]
+            self.card_list = settings_json["card_list"]
         
     def reset(self):
         settings_json = {
@@ -21,7 +26,8 @@ class Settings:
             "target_lang": "es",
             "front_format": "[TKL]",
             "back_format": "[TTL]",
-            "deck_name": "Unnamed Deck"
+            "deck_name": "Unnamed Deck",
+            "card_list": []
         }
         with open("settings.json","w") as file:
             json.dump(settings_json, file)
@@ -42,8 +48,8 @@ class Settings:
             self.front_format = settings_json["front_format"]
             self.back_format = settings_json["back_format"]
             self.deck_name = settings_json["deck_name"]
+            self.card_list = settings_json["card_list"]
         
-        self.card_list = []
         self.KnownLang.set(self.known_lang)
         self.TargetLang.set(self.target_lang)
         self.FrontFormat.set(self.front_format)
@@ -57,20 +63,22 @@ class Settings:
         self.back_format = self.BackFormat.get()
         self.deck_name = self.DeckName.get()
         self.standard_deck_name = self.deck_name.lower().replace(" ","_")
+        print(f"set strings: {self.known_lang}, {self.target_lang}, {self.front_format}, ...")
         
         settings_json = {
             "known_lang": self.known_lang,
             "target_lang": self.target_lang,
             "front_format": self.front_format,
             "back_format": self.back_format,
-            "deck_name": self.deck_name
+            "deck_name": self.deck_name,
+            "card_list": self.card_list
         }
         with open("settings.json","w") as file:
             json.dump(settings_json, file)
     
     def open(self, root):
         self.window = tk.Toplevel(root)
-        self.window.title("FastFlashcards v0.1.0 - Settings")
+        self.window.title(f"FastFlashcards v{version} - Settings")
         self.window.geometry("300x250")
         
         self.make_widgets()

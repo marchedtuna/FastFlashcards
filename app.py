@@ -4,19 +4,22 @@ from tkinter import *
 from tkinter import ttk
 
 from settings import Settings
-from card_creation import fill_details, add_line
+from card_creation import stored_name, fill_details, add_line
+
+global version
+version = "0.1.1"
 
 settings = Settings()
 
 class App:
     def __init__(self, root, settings):
         self.root = root
-        self.root.title("FastFlashcards v0.1.0")
+        self.root.title(f"FastFlashcards v{version}")
         self.root.geometry("300x500")
         
-        self.make_widgets()
+        self.make_widgets(settings)
     
-    def make_widgets(self):
+    def make_widgets(self, settings):
         #Adds widgets
         tk.Button(self.root, text="Settings", command=lambda: settings.open(self.root)).pack(anchor="e")
         tk.Label(self.root, text="FastFlashcards", font=("arial",30)).pack(pady=25)
@@ -28,12 +31,22 @@ class App:
         self.cards_added = 0
         self.AddedCards = tk.StringVar()
         self.AddedCards.set("")
-        tk.Button(self.entry_frame, text="Create Card", command=self.upload_text).pack()
+        tk.Button(self.entry_frame, text="Create Card", command=lambda: self.upload_text(settings)).pack()
         self.entry_frame.pack()
         tk.Label(self.root, textvariable=self.AddedCards).pack()
-        tk.Button(self.root, text="Export TXT File", command=self.make_txt).pack(pady=15)
+        tk.Button(self.root, text="Export TXT File", command=lambda: self.make_txt(settings)).pack(pady=15)
+        tk.Button(self.root, text="Print Settings", command=lambda: self.print_settings(settings)).pack(pady=15)
         
-    def upload_text(self):
+    def print_settings(self, settings):
+        #For debugging
+        print(f"known_lang: {settings.known_lang}")
+        print(f"target_lang: {settings.target_lang}")
+        print(f"front_format: {settings.front_format}")
+        print(f"back_format: {settings.back_format}")
+        print(f"deck_name: {settings.deck_name}")
+        print(f"card_list: {settings.card_list}")
+        
+    def upload_text(self, settings):
         #Makes card?
         text = self.card_text.get()
         if text == "":
@@ -46,22 +59,21 @@ class App:
         print(f"kl: {settings.known_lang}, tl: {settings.target_lang}")
         return card_details
     
-    def make_txt(self):
+    def make_txt(self, settings):
         initial_dir = os.getcwd()
         os.chdir(os.path.join(initial_dir, "decks"))
-        txt_path = os.path.join(os.getcwd(), f"{settings.standard_deck_name}.txt")
         
-        if not os.path.isfile(txt_path):
-            with open(f"{settings.standard_deck_name}.txt", "w") as txt:
-                txt.write("#separator:tab\n")
-                txt.write("#html:true\n")
-                txt.write("#deck column: 1\n")
-                txt.write("#tags column: 4\n")
-                txt.close()
+        with open(f"{stored_name(settings.deck_name)}.txt", "w") as txt:
+            txt.write("#separator:tab\n")
+            txt.write("#html:true\n")
+            txt.write("#deck column: 1\n")
+            txt.write("#tags column: 4\n")
         
-        txt = open(f"{settings.standard_deck_name}.txt", "a")
-        print(".txt file opened")
-        for card_details in settings.card_list:
-            txt.write(add_line(card_details, settings))
-        txt.close()
+            print(".txt file opened")
+            for card_details in settings.card_list:
+                l = add_line(card_details, settings)
+                print(f"Line: {l}")
+                txt.write(l)
+            txt.close()
+        
         os.chdir("..")
